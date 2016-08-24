@@ -9,6 +9,7 @@
 #import "ViewController.h"
 #import "apps.h"
 #import "TableViewCell.h"
+#import "NSString+sandBoxPath.h"
 @interface ViewController ()
 @property (strong, nonatomic) NSArray *appsArr;
 
@@ -34,14 +35,29 @@
     apps *app = self.appsArr[indexPath.row];
     cell.nameLable.text = app.name;
     cell.loadLable.text = app.download;
-    
+    NSString *sandBox = [NSString catchSandBoxPath:app.icon];
     
     cell.iconImage.image = [UIImage imageNamed:@"user_default"];
     
+    //判断内存缓存中有没有
     if (self.imageCache[app.icon] != nil) {
         cell.iconImage.image = self.imageCache[app.icon];
+        NSLog(@"内存有数据");
         return cell;
     }
+    
+    //判断沙盒中有没有
+    //取出沙盒中的数据
+    UIImage *sandBoxImage = [UIImage imageWithContentsOfFile:sandBox];
+    if (sandBoxImage) {
+        NSLog(@"沙盒有数据");
+        self.imageCache[app.icon] = sandBoxImage;
+        //将image存到内存缓存
+        [self.imageCache setObject:sandBoxImage forKey:app.icon];
+        return cell;
+    }
+    
+    
     if (self.optionsCache[app.icon] != nil) {
         NSLog(@"有任务");
         return cell;
@@ -54,7 +70,10 @@
             [NSThread sleepForTimeInterval:5];
         }
         
-        UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:app.icon]]];
+        NSURL *imageurl = [NSURL URLWithString:app.icon];
+        NSData *imageData = [NSData dataWithContentsOfURL:imageurl];
+        UIImage *image = [UIImage imageWithData:imageData];
+        [imageData writeToFile:sandBox atomically:YES];
         
         if (image != nil) {
             [[NSOperationQueue mainQueue] addOperationWithBlock:^{
@@ -66,6 +85,7 @@
             }];
         }
     }];
+    
     [concurrent addOperation:text];
     [self.optionsCache setObject:text forKey:app.icon];
     return cell;

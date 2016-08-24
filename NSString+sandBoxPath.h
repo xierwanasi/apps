@@ -11,5 +11,5 @@
 @interface NSString (sandBoxPath)
 
 
-- (NSString *)catchSandBoxPath: (NSString *)URLStr;
++ (NSString *)catchSandBoxPath: (NSString *)URLStr;
 @end
