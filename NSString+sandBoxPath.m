@@ -10,6 +10,12 @@
 
 @implementation NSString (sandBoxPath)
 
-
+- (NSString *)catchSandBoxPath:(NSString *)URLStr{
+    NSString *sandBox = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).lastObject;
+    
+    NSString *sandBoxPath = [sandBox stringByAppendingPathComponent:URLStr.lastPathComponent];
+    
+    return sandBoxPath;
+}
 
 @end
